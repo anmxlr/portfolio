@@ -4,7 +4,7 @@
     "title": "Your Name on India-SAT",
     "description": "A sharp public-facing web experience built around a space-themed participation idea, tuned for clean storytelling and fast static delivery.",
     "tags": "HTML, CSS, Vanilla JS, UI",
-    "link": "https://github.com/anmxlr",
+    "link": "https://anmxlr.github.io/Your_name_on_India/",
     "github": "https://github.com/anmxlr",
     "image": "src/assets/images/projects/1.png",
     "year": "2026",
@@ -12,7 +12,7 @@
   },
   {
     "id": "2",
-    "title": "Campus Systems Experiments",
+    "title": "Project 2",
     "description": "Backend and product experiments for college-scale workflows: cleaner APIs, faster loops, and tools that hold up under real student usage.",
     "tags": "Backend, REST, Product",
     "link": "https://github.com/anmxlr",
@@ -23,7 +23,7 @@
   },
   {
     "id": "3",
-    "title": "Interface Lab",
+    "title": "Project 3",
     "description": "A playground for motion, black-and-white visual systems, canvas interactions, custom cursors, and hidden details that reward attention.",
     "tags": "Canvas, Motion, CSS, JS",
     "link": "https://github.com/anmxlr",
