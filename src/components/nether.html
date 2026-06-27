@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="anmxlr — personal landing page">
+    <title>the nether</title>
+    <!-- Google Fonts for Scrapbook / Typewriter Aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Special+Elite&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="nether.css">
+    <link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg" />
+    <link rel="shortcut icon" href="../assets/images/logo.svg" />
+</head>
+
+<body>
+
+    <!-- ── Main Page ────────────────────────────────── -->
+    <div class="main-page" id="main-page">
+
+        <canvas class="constellation-canvas" id="constellation-canvas" aria-hidden="true"></canvas>
+
+        <!-- Top Navigation Bar -->
+        <nav class="top-bar" id="top-bar">
+            <div class="logo">
+                <img src="../assets/images/logo.svg" alt="anmxlr Logo" class="logo-icon">
+                <span>anmxlr ™</span>
+            </div>
+
+            <a href="#" class="contact-btn portal-broken" id="contact-btn" onclick="return false;"
+                style="border-color: #ef4444; color: #ef4444; cursor: not-allowed; border-style: dashed;">
+                <span>PORTAL BROKEN</span>
+                <svg class="arrow-icon" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 7h12M8 2l5 5-5 5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </a>
+        </nav>
+
+        <!-- ── Hero Section ────────────────────────────── -->
+        <section class="about-hero" id="about-hero">
+            <h1 class="about-hero-title" style="position: relative;">
+                Hey, I'm Anmol Raj
+                <div class="purple-flame-container" style="top: 0px; left: -50px;">
+                    <div class="purple-flame-outer"></div>
+                    <div class="purple-flame-core"></div>
+                </div>
+                <div class="purple-flame-container" style="top: 0px; right: -50px;">
+                    <div class="purple-flame-outer"></div>
+                    <div class="purple-flame-core"></div>
+                </div>
+            </h1>
+            <p class="about-hero-subtitle">I love listening to sad radiohead songs.</p>
+            <div class="vinyl-player-container">
+                <div class="vinyl-player" id="vinyl-player">
+                    <div class="vinyl-sleeve">
+                        <img src="../assets/images/about/Radioheadkida.png" alt="In Rainbows Cover" class="sleeve-img">
+                    </div>
+                    <div class="vinyl-disk-wrapper">
+                        <img src="../assets/images/about/kida.png" alt="Vinyl Record" class="vinyl-disk-img">
+                    </div>
+                    <audio id="vinyl-audio" src="../assets/audio/motionpicturesoundtrack.mp3" loop></audio>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- ── Minecraft Mini Game Section ────────────────────────────– -->
+        <section class="about-content-section" id="minecraft-section">
+            <div class="section-header" style="position: relative;">
+                <div class="purple-flame-container" style="top: 10px; left: -40px;">
+                    <div class="purple-flame-outer"></div>
+                    <div class="purple-flame-core"></div>
+                </div>
+                <div class="section-kicker" style="color: #9333ea;">Nether Escape</div>
+                <h2 class="section-title" style="border-color: #9333ea;">Escape the Nether</h2>
+                <p class="section-description" style="color: #e9d5ff;">
+                    Your portal is broken! Mine 10 Obsidian blocks to rebuild it and escape before the Endermen catch
+                    you.
+                    WARNING: If you die in the Nether, your entire inventory will be lost!
+                </p>
+            </div>
+
+            <div class="mc-console-wrapper" style="position: relative;">
+                <!-- Left Side Console Flame -->
+                <div class="purple-flame-container" style="top: 40px; left: -45px;">
+                    <div class="purple-flame-outer"></div>
+                    <div class="purple-flame-core"></div>
+                </div>
+                <!-- Right Side Console Flame -->
+                <div class="purple-flame-container" style="top: 40px; right: -45px;">
+                    <div class="purple-flame-outer"></div>
+                    <div class="purple-flame-core"></div>
+                </div>
+                <div class="mc-console">
+                    <!-- Screen Area -->
+                    <div class="mc-screen">
+                        <div class="mc-block-container">
+                            <div class="mc-block" id="mc-active-block">
+                                <div class="mc-block-cracks" id="mc-block-cracks"></div>
+                                <span class="mc-block-symbol" id="mc-block-symbol">🪨</span>
+                            </div>
+                        </div>
+                        <div class="mc-screen-stats">
+                            <div class="mc-block-name" id="mc-block-name">Stone</div>
+                            <div class="mc-block-hp-bar">
+                                <div class="mc-block-hp-fill" id="mc-block-hp-fill" style="width: 100%;"></div>
+                            </div>
+                            <div class="mc-block-hp-text" id="mc-block-hp-text">HP: 40 / 40</div>
+                            <div class="mc-obsidian-count" id="mc-obsidian-count"
+                                style="font-family: 'Courier Prime', monospace; font-size: 0.78rem; color: #9333ea; margin-top: 4px; font-weight: bold;">
+                                Obsidian Mined: 0 / 10</div>
+                        </div>
+                    </div>
+
+                    <!-- Controls Area -->
+                    <div class="mc-controls">
+                        <!-- Inventory Panel -->
+                        <div class="mc-inventory">
+                            <div class="mc-inv-slot" title="Cobblestone">
+                                <span class="mc-inv-icon"><img src="../assets/images/minecraft/stone_icon.png"
+                                        alt="Cobblestone" draggable="false"></span>
+                                <span class="mc-inv-count" id="mc-count-cobble">0</span>
+                            </div>
+                            <div class="mc-inv-slot" title="Coal">
+                                <span class="mc-inv-icon"><img src="../assets/images/minecraft/coal_icon.webp"
+                                        alt="Coal" draggable="false"></span>
+                                <span class="mc-inv-count" id="mc-count-coal">0</span>
+                            </div>
+                            <div class="mc-inv-slot" title="Iron">
+                                <span class="mc-inv-icon"><img src="../assets/images/minecraft/iron_icon.webp"
+                                        alt="Iron" draggable="false"></span>
+                                <span class="mc-inv-count" id="mc-count-iron">0</span>
+                            </div>
+                            <div class="mc-inv-slot" title="Gold">
+                                <span class="mc-inv-icon"><img src="../assets/images/minecraft/gold_icon.webp"
+                                        alt="Gold" draggable="false"></span>
+                                <span class="mc-inv-count" id="mc-count-gold">0</span>
+                            </div>
+                            <div class="mc-inv-slot" title="Diamond">
+                                <span class="mc-inv-icon"><img src="../assets/images/minecraft/daimond_icon.png"
+                                        alt="Diamond" draggable="false"></span>
+                                <span class="mc-inv-count" id="mc-count-diamond">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Upgrade Action Panel -->
+                        <div class="mc-actions">
+                            <button class="mc-btn" id="mc-escape-btn" type="button" disabled
+                                style="display: none; border-color: #9333ea; color: #9333ea;">
+                                <span class="mc-btn-label">ESCAPE THE NETHER</span>
+                                <span class="mc-btn-cost" id="mc-escape-status">Portal Inactive</span>
+                            </button>
+                            <div class="mc-tool-info" id="mc-tool-info" style="color: #e9d5ff;">Tool: Netherite Pickaxe
+                                (Power: 50)</div>
+                            <div class="mc-nether-warning" id="mc-nether-warning"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+
+
+        <!-- Film grain texture overlay -->
+        <div class="grain"></div>
+        <div class="nether-portal-transition" id="portal-transition"></div>
+    </div>
+
+    <script src="nether.js"></script>
+</body>
+
+</html>

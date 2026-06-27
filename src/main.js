@@ -5,6 +5,61 @@ if (history.scrollRestoration) {
 window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
+  // ── Tap Sound ─────────────────────────────────────
+  const tapAudioSrc = 'src/assets/audio/tap.mp3';
+  const tapPool = [];
+  const TAP_POOL_SIZE = 6;
+  for (let i = 0; i < TAP_POOL_SIZE; i++) {
+    const a = new Audio(tapAudioSrc);
+    a.volume = 0.35;
+    tapPool.push(a);
+  }
+  let tapIndex = 0;
+
+  function playTap(volume) {
+    const a = tapPool[tapIndex];
+    tapIndex = (tapIndex + 1) % TAP_POOL_SIZE;
+    a.volume = volume !== undefined ? volume : 0.35;
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  }
+
+  // ── Tap Sound on Interactive Elements ──────────────
+  window.addEventListener('click', (e) => {
+    const hit = e.target.closest('a, button, input[type="submit"], input[type="button"], .logo, [role="button"], project-card, .connect-btn, .status-card, .chip');
+    if (hit) {
+      playTap(0.35);
+    }
+  });
+
+  // ── Passport System ────────────────────────────────
+  window.unlockPassportStamp = function (key) {
+    if (localStorage.getItem(`passport_stamp_${key}`) === 'unlocked') return;
+    localStorage.setItem(`passport_stamp_${key}`, 'unlocked');
+    
+    // Play double thud stamp sound
+    playTap(0.7);
+    setTimeout(() => playTap(0.55), 80);
+
+    // Show toast
+    showPassportToast(key);
+  };
+
+  function showPassportToast(key) {
+    const toast = document.createElement('div');
+    toast.className = 'passport-toast';
+    toast.innerHTML = `
+      <span class="toast-kicker">Passport Stamp Earned</span>
+      <span class="toast-title">${key.toUpperCase()}</span>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 400);
+    }, 3200);
+  }
+
   const introScreen = document.getElementById('intro-screen');
   const mainPage = document.getElementById('main-page');
   const topBar = document.getElementById('top-bar');
@@ -24,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Custom cursor click & hover triggers (event delegation)
     window.addEventListener('mouseover', (e) => {
-      const isInteractive = e.target.closest('a, button, input, project-card, .logo, [role="button"], #name-warp-canvas, .connect-btn, .signal-panel');
+      const isInteractive = e.target.closest('a, button, input, project-card, .logo, [role="button"], #name-warp-canvas, .connect-btn, .status-card');
       document.documentElement.classList.toggle('cursor-hover', !!isInteractive);
     });
     window.addEventListener('mousedown', () => document.documentElement.classList.add('cursor-click'));
@@ -85,50 +140,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Hero Title Word Animation ─────────────────────
   function startHeroAnimation() {
+    const heroTitle = document.querySelector('.hero-title');
+    const titleIntro = document.querySelector('.hero-title-intro');
     const wrapper = document.querySelector('.change-wrapper');
     const strike = document.querySelector('.word-strike');
-    const pop = document.querySelector('.word-pop');
-    if (!wrapper || !strike || !pop) return;
+    const typewriterText = document.querySelector('.typewriter-text');
+    if (!wrapper || !strike) return;
+    const finalTitle = 'make something cool';
 
-    wrapper.style.width = `${strike.offsetWidth}px`;
-    setTimeout(() => wrapper.classList.add('cut'), 1200);
-    setTimeout(() => {
-      wrapper.classList.add('split');
+    function fitFinalTitle() {
+      if (!heroTitle) return;
 
-      const targetWord = "cool";
-
-      // Dynamic measurement of target word width
+      wrapper.style.removeProperty('--rewrite-font-size');
       const tempSpan = document.createElement('span');
       tempSpan.style.visibility = 'hidden';
       tempSpan.style.position = 'absolute';
       tempSpan.style.whiteSpace = 'nowrap';
-      tempSpan.style.font = window.getComputedStyle(pop).font;
-      tempSpan.textContent = targetWord;
+      tempSpan.style.font = window.getComputedStyle(wrapper).font;
+      tempSpan.textContent = finalTitle;
       document.body.appendChild(tempSpan);
 
-      // Let's add extra width for the cursor block (4px width + 4px margin)
-      const targetWidth = tempSpan.offsetWidth + 8;
+      const availableWidth = Math.max(heroTitle.clientWidth - 16, 1);
+      const measuredWidth = tempSpan.offsetWidth;
+      const scale = Math.min(1, availableWidth / Math.max(measuredWidth, 1));
       document.body.removeChild(tempSpan);
 
-      wrapper.style.width = `${targetWidth}px`;
-    }, 1500);
+      wrapper.style.setProperty('--rewrite-font-size', `${scale.toFixed(3)}em`);
+      wrapper.style.width = `${Math.ceil(measuredWidth * scale) + 8}px`;
+
+      if (typewriterText?.textContent) {
+        const currentSpan = document.createElement('span');
+        currentSpan.style.visibility = 'hidden';
+        currentSpan.style.position = 'absolute';
+        currentSpan.style.whiteSpace = 'nowrap';
+        currentSpan.style.font = window.getComputedStyle(wrapper).font;
+        currentSpan.textContent = typewriterText.textContent;
+        document.body.appendChild(currentSpan);
+        wrapper.style.setProperty('--typewriter-width', `${currentSpan.offsetWidth}px`);
+        document.body.removeChild(currentSpan);
+      }
+    }
+
+    if (typewriterText) typewriterText.textContent = '';
+    wrapper.style.setProperty('--typewriter-width', '0px');
+    wrapper.style.width = `${strike.offsetWidth}px`;
+    setTimeout(() => wrapper.classList.add('cut'), 1200);
+    setTimeout(() => {
+      if (heroTitle) heroTitle.classList.add('rewriting');
+      if (titleIntro) titleIntro.hidden = true;
+      wrapper.classList.add('split');
+      fitFinalTitle();
+    }, 1800);
 
     setTimeout(() => {
       wrapper.classList.add('pop');
-      typewriterEffect(pop.querySelector('.typewriter-text'), 'cool');
-    }, 1750);
+      typewriterEffect(wrapper, typewriterText, finalTitle);
+    }, 2050);
+
+    window.addEventListener('resize', () => {
+      if (heroTitle?.classList.contains('rewriting')) fitFinalTitle();
+    }, { passive: true });
   }
 
-  function typewriterEffect(element, text) {
-    if (!element) return;
-    element.textContent = '';
+  function typewriterEffect(wrapper, target, text) {
+    if (!wrapper || !target) return;
     let index = 0;
+    const tempSpan = document.createElement('span');
+    tempSpan.style.visibility = 'hidden';
+    tempSpan.style.position = 'absolute';
+    tempSpan.style.whiteSpace = 'nowrap';
+    tempSpan.style.font = window.getComputedStyle(wrapper).font;
+    document.body.appendChild(tempSpan);
 
     function type() {
       if (index < text.length) {
-        element.textContent += text.charAt(index);
         index++;
-        setTimeout(type, 180 + Math.random() * 120);
+        const currentText = text.slice(0, index);
+        target.textContent = currentText;
+        tempSpan.textContent = currentText;
+        wrapper.style.setProperty('--typewriter-width', `${tempSpan.offsetWidth}px`);
+        setTimeout(type, 50 + Math.random() * 40);
+      } else {
+        document.body.removeChild(tempSpan);
       }
     }
 
@@ -159,10 +252,103 @@ document.addEventListener('DOMContentLoaded', () => {
   let totalSlots = 0;
   let slots = [];
 
+  const PROJECT_HOLD_VH = 0.5;
+  const PROJECT_TRANS_VH = 0.15;
+
+  function easeInOutCubic(t) {
+    const x = Math.min(Math.max(t, 0), 1);
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  }
+
+  function getProjectsScrollableVh(slotCount) {
+    if (slotCount <= 1) return 0;
+    return slotCount * PROJECT_HOLD_VH + (slotCount - 1) * PROJECT_TRANS_VH;
+  }
+
+  function scrolledToProjectProgress(scrolledPx, slotCount) {
+    if (slotCount <= 1) return 0;
+
+    const vh = window.innerHeight;
+    let cursorVh = 0;
+
+    for (let i = 0; i < slotCount; i++) {
+      if (scrolledPx / vh < cursorVh + PROJECT_HOLD_VH) {
+        return i / (slotCount - 1);
+      }
+      cursorVh += PROJECT_HOLD_VH;
+
+      if (i < slotCount - 1) {
+        if (scrolledPx / vh < cursorVh + PROJECT_TRANS_VH) {
+          const t = easeInOutCubic((scrolledPx / vh - cursorVh) / PROJECT_TRANS_VH);
+          return (i + t) / (slotCount - 1);
+        }
+        cursorVh += PROJECT_TRANS_VH;
+      }
+    }
+
+    return 1;
+  }
+
+  function lockIndexToProjectScrollPx(lockIndex, slotCount) {
+    const vh = window.innerHeight;
+    let cursorVh = 0;
+
+    for (let i = 0; i < lockIndex; i++) {
+      cursorVh += PROJECT_HOLD_VH + PROJECT_TRANS_VH;
+    }
+    cursorVh += PROJECT_HOLD_VH * 0.5;
+    return cursorVh * vh;
+  }
+
+  function applyDesktopStackSlots(fractionalIndex, slotCount) {
+    if (!slots.length || slotCount <= 0) return;
+    const activeIndex = slotCount > 1 ? fractionalIndex * (slotCount - 1) : 0;
+    const isMobileView = window.innerWidth <= 768;
+
+    slots.forEach((slot, index) => {
+      const offset = slotCount > 1 ? index - activeIndex : 0;
+      const absOffset = Math.abs(offset);
+
+      if (offset < -1.35 || offset > 2.35) {
+        slot.style.opacity = '0';
+        slot.style.visibility = 'hidden';
+        slot.style.pointerEvents = 'none';
+        slot.style.filter = 'none';
+        slot.classList.remove('active');
+        return;
+      }
+
+      slot.style.visibility = 'visible';
+      const isActive = absOffset < 0.34;
+      slot.classList.toggle('active', isActive);
+      slot.style.pointerEvents = isActive ? 'auto' : 'none';
+
+      const incoming = Math.max(offset, 0);
+      const outgoing = Math.max(-offset, 0);
+      const smoothOffset = Math.sign(offset) * easeInOutCubic(Math.min(absOffset, 1));
+      const smoothIncoming = Math.max(smoothOffset, 0);
+      const smoothOutgoing = Math.max(-smoothOffset, 0);
+      const incomingTravel = isMobileView ? 132 : 210;
+      const outgoingTravel = isMobileView ? 110 : 170;
+      const translateX = smoothIncoming * incomingTravel - smoothOutgoing * outgoingTravel;
+      const translateY = smoothIncoming * 14 + smoothOutgoing * 10;
+      const translateZ = -Math.min(absOffset * (isMobileView ? 58 : 82), isMobileView ? 118 : 170);
+      const rotateY = Math.max(-8, Math.min(10, smoothIncoming * -6 + smoothOutgoing * 4));
+      const rotateZ = Math.max(-3, Math.min(3, smoothIncoming * 2 - smoothOutgoing * 2.5));
+      const scale = 1 - Math.min(absOffset * (isMobileView ? 0.055 : 0.065), isMobileView ? 0.12 : 0.16);
+      const opacityFalloff = incoming * (isMobileView ? 0.3 : 0.34) + outgoing * (isMobileView ? 0.62 : 0.72);
+      const opacity = absOffset < 0.42 ? 1 : Math.max(0, 1 - opacityFalloff);
+
+      slot.style.zIndex = String(100 - Math.round(absOffset * 12) + (offset > 0 ? 0 : -6));
+      slot.style.transform = `translate3d(${translateX}px, ${translateY}px, ${translateZ}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`;
+      slot.style.opacity = String(opacity);
+      slot.style.filter = absOffset > 0.7 ? `blur(${Math.min((absOffset - 0.7) * 2, 1.4)}px)` : 'none';
+    });
+  }
+
   initConstellation();
-  initLabConsole();
+  initLabScroll();
   initHiddenTerminal();
-  initSignalPanel();
   initEasterEggs();
   initPhonePuzzle();
   initReachForm();
@@ -194,7 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const experienceSection = document.getElementById('experience-section');
   const aboutSection = document.getElementById('about-section');
   const labSection = document.getElementById('lab-section');
-  const lifeSection = document.getElementById('life-section');
   const footerContent = document.querySelector('.footer-content');
 
   const revealObserver = new IntersectionObserver((entries, observer) => {
@@ -217,13 +402,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (experienceSection) revealObserver.observe(experienceSection);
   if (aboutSection) revealObserver.observe(aboutSection);
   if (labSection) revealObserver.observe(labSection);
-  if (lifeSection) revealObserver.observe(lifeSection);
   if (nameWarpSection) revealObserver.observe(nameWarpSection);
   if (footerContent) revealObserver.observe(footerContent);
 
   // Async function to load projects and initialize scroll behavior
   async function loadProjects() {
-    if (!projectsTrack || !projectsStack || !projectsScroller || !projectsSpacer) return;
+    if (!projectsTrack || !projectsStack || !projectsScroller) return;
 
     let projects = [];
     try {
@@ -251,7 +435,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    projectsSpacer.style.height = totalSlots > 1 ? `${Math.max(900, totalSlots * 360)}px` : '100%';
+    // Dynamic track height for scroll-pinning across screen sizes.
+    function handleResize() {
+      if (window.innerWidth <= 768) {
+        projectsTrack.style.height = 'auto';
+        return;
+      }
+
+      projectsTrack.style.height = `${window.innerHeight + getProjectsScrollableVh(totalSlots) * window.innerHeight}px`;
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
 
     // Clear and inject slots
     projectsStack.innerHTML = '';
@@ -276,24 +470,141 @@ document.addEventListener('DOMContentLoaded', () => {
 
     slots = document.querySelectorAll('.stack-slot');
 
-    let projectSnapTimer = null;
-    projectsScroller.addEventListener('scroll', () => {
-      const totalScrollable = projectsScroller.scrollHeight - projectsScroller.clientHeight;
-      targetProgress = totalScrollable > 0
-        ? Math.min(Math.max(projectsScroller.scrollTop / totalScrollable, 0), 1)
-        : 0;
+    let pageSnapTimer = null;
+    let isDraggingProgress = false;
 
-      clearTimeout(projectSnapTimer);
-      projectSnapTimer = setTimeout(() => {
-        if (totalSlots <= 1) return;
-        const snapIndex = Math.round(targetProgress * (totalSlots - 1));
-        const snapProgress = snapIndex / (totalSlots - 1);
-        projectsScroller.scrollTo({
-          top: snapProgress * totalScrollable,
-          behavior: 'smooth'
-        });
-      }, 140);
+    function scrollToProjectProgress(progress, behavior = 'auto') {
+      const clampedProgress = Math.min(Math.max(progress, 0), 1);
+      targetProgress = clampedProgress;
+      if (window.innerWidth <= 768) return;
+
+      const scrollable = projectsTrack.offsetHeight - window.innerHeight;
+      window.scrollTo({
+        top: projectsTrack.offsetTop + scrollable * clampedProgress,
+        behavior
+      });
+    }
+
+    function setProgressFromClientX(clientX, behavior = 'auto') {
+      const progressTrack = projectsProgress?.parentElement;
+      if (!progressTrack) return;
+
+      const rect = progressTrack.getBoundingClientRect();
+      const progress = rect.width > 0 ? (clientX - rect.left) / rect.width : 0;
+      targetProgress = Math.min(Math.max(progress, 0), 1);
+      scrollToProjectProgress(targetProgress, behavior);
+    }
+
+    // Page Scroll (Sticky Pinning) logic
+    window.addEventListener('scroll', () => {
+      if (window.innerWidth <= 768) return;
+
+      const trackRect = projectsTrack.getBoundingClientRect();
+      const trackHeight = trackRect.height - window.innerHeight;
+      if (trackHeight <= 0) return;
+
+      const scrolled = Math.min(Math.max(-trackRect.top, 0), trackHeight);
+      targetProgress = scrolledToProjectProgress(scrolled, totalSlots);
+
+      clearTimeout(pageSnapTimer);
+      if (!isDraggingProgress && trackRect.top <= 80 && trackRect.bottom >= window.innerHeight - 80 && totalSlots > 1) {
+        pageSnapTimer = setTimeout(() => {
+          const snapIndex = Math.round(targetProgress * (totalSlots - 1));
+          const snapOffset = lockIndexToProjectScrollPx(snapIndex, totalSlots);
+          if (Math.abs(scrolled - snapOffset) < 32) return;
+
+          window.scrollTo({
+            top: window.scrollY + trackRect.top + snapOffset,
+            behavior: 'smooth'
+          });
+        }, 320);
+      }
     }, { passive: true });
+
+    const progressTrack = projectsProgress?.parentElement;
+    if (progressTrack) {
+      progressTrack.addEventListener('pointerdown', (event) => {
+        isDraggingProgress = true;
+        progressTrack.setPointerCapture?.(event.pointerId);
+        progressTrack.classList.add('is-dragging');
+        setProgressFromClientX(event.clientX);
+      });
+
+      progressTrack.addEventListener('pointermove', (event) => {
+        if (!isDraggingProgress) return;
+        setProgressFromClientX(event.clientX);
+      });
+
+      const stopProgressDrag = (event) => {
+        if (!isDraggingProgress) return;
+        isDraggingProgress = false;
+        progressTrack.releasePointerCapture?.(event.pointerId);
+        progressTrack.classList.remove('is-dragging');
+        setProgressFromClientX(event.clientX, 'smooth');
+      };
+
+      progressTrack.addEventListener('pointerup', stopProgressDrag);
+      progressTrack.addEventListener('pointercancel', stopProgressDrag);
+      progressTrack.addEventListener('lostpointercapture', () => {
+        isDraggingProgress = false;
+        progressTrack.classList.remove('is-dragging');
+      });
+    }
+
+    if (projectsScroller) {
+      let swipeStartX = 0;
+      let swipeStartY = 0;
+      let swipeStartProgress = 0;
+      let isSwipingProjects = false;
+
+      projectsScroller.addEventListener('pointerdown', (event) => {
+        if (window.innerWidth > 768 || event.target.closest('a, button')) return;
+        isSwipingProjects = true;
+        swipeStartX = event.clientX;
+        swipeStartY = event.clientY;
+        swipeStartProgress = targetProgress;
+        projectsScroller.setPointerCapture?.(event.pointerId);
+        projectsScroller.classList.add('is-swiping');
+      });
+
+      projectsScroller.addEventListener('pointermove', (event) => {
+        if (!isSwipingProjects || window.innerWidth > 768 || totalSlots <= 1) return;
+
+        const deltaX = event.clientX - swipeStartX;
+        const deltaY = event.clientY - swipeStartY;
+        if (Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+        event.preventDefault();
+        const dragProgress = -deltaX / Math.max(projectsScroller.clientWidth, 1) / (totalSlots - 1);
+        targetProgress = Math.min(Math.max(swipeStartProgress + dragProgress, 0), 1);
+      });
+
+      const stopProjectSwipe = (event) => {
+        if (!isSwipingProjects) return;
+
+        const deltaX = event.clientX - swipeStartX;
+        const activeIndex = Math.round(targetProgress * (totalSlots - 1));
+        const swipeThreshold = Math.min(90, Math.max(42, projectsScroller.clientWidth * 0.16));
+        let nextIndex = activeIndex;
+
+        if (Math.abs(deltaX) > swipeThreshold) {
+          nextIndex = deltaX < 0 ? Math.ceil(swipeStartProgress * (totalSlots - 1)) + 1 : Math.floor(swipeStartProgress * (totalSlots - 1)) - 1;
+        }
+
+        nextIndex = Math.min(Math.max(nextIndex, 0), totalSlots - 1);
+        targetProgress = totalSlots > 1 ? nextIndex / (totalSlots - 1) : 0;
+        isSwipingProjects = false;
+        projectsScroller.releasePointerCapture?.(event.pointerId);
+        projectsScroller.classList.remove('is-swiping');
+      };
+
+      projectsScroller.addEventListener('pointerup', stopProjectSwipe);
+      projectsScroller.addEventListener('pointercancel', stopProjectSwipe);
+      projectsScroller.addEventListener('lostpointercapture', () => {
+        isSwipingProjects = false;
+        projectsScroller.classList.remove('is-swiping');
+      });
+    }
 
     // Start render loop
     renderLoop();
@@ -304,36 +615,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Animation Loop (lerps scroll progress, custom cursor ring, and parallax coordinates)
   function renderLoop() {
-    currentProgress += (targetProgress - currentProgress) * 0.08;
-    currentMouseX += (targetMouseX - currentMouseX) * 0.05;
-    currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+    const isMobile = window.innerWidth <= 768;
+    const progressDelta = Math.abs(targetProgress - currentProgress);
+    const progressLerp = isMobile
+      ? (progressDelta > 0.01 ? 0.12 : 0.08)
+      : (progressDelta > 0.01 ? 0.13 : 0.085);
 
-    // Grid animation with velocity-driven speedup
-    const speed = 0.4 + Math.abs(targetProgress - currentProgress) * 25;
-    gridOffset = (gridOffset + speed) % 60;
+    currentProgress += (targetProgress - currentProgress) * progressLerp;
 
-    const bounce = totalSlots > 1 ? Math.abs(Math.sin(currentProgress * Math.PI * (totalSlots - 1))) : 0;
-
-    if (bgCircles) {
-      bgCircles.style.transform = `rotate(${currentProgress * 80 + currentMouseX * 30}deg) translate3d(${currentMouseX * 35}px, ${currentMouseY * 35}px, 0) scale(${1 + bounce * 0.06})`;
-    }
-    if (bgGrid) {
-      bgGrid.style.transform = `perspective(600px) rotateX(${65 + currentMouseY * 12}deg) rotateY(${currentMouseX * 12}deg) translateY(${gridOffset}px)`;
-    }
-
-    const activeIndex = totalSlots > 1 ? Math.round(currentProgress * (totalSlots - 1)) : 0;
     if (projectsProgress) {
       projectsProgress.style.transform = `scaleX(${Math.max(0.04, currentProgress)})`;
     }
 
-    slots.forEach((slot, index) => {
-      const x = totalSlots > 1 ? index - currentProgress * (totalSlots - 1) : 0;
-      const absX = Math.abs(x);
-      slot.style.transform = `translate3d(${x * 125}%, ${absX * 20}px, 0) rotateY(${x * -18}deg) skewX(${x * -5}deg) scale(${1 - Math.min(absX * 0.08, 0.2)})`;
-      slot.style.opacity = Math.max(0, 1 - absX * 0.65);
-      slot.style.filter = absX > 0.1 ? `blur(${Math.min(absX * 2, 4)}px)` : 'none';
-      slot.classList.toggle('active', index === activeIndex);
-    });
+    if (slots.length && totalSlots > 0) {
+      applyDesktopStackSlots(currentProgress, totalSlots);
+    }
+
+    if (!isMobile) {
+      currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+      currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+
+      const gridSpeed = 0.28 + progressDelta * 18;
+      gridOffset = (gridOffset + gridSpeed) % 60;
+
+      if (bgCircles) {
+        bgCircles.style.transform = `rotate(${currentProgress * 48 + currentMouseX * 18}deg) translate3d(${currentMouseX * 22}px, ${currentMouseY * 22}px, 0)`;
+      }
+      if (bgGrid) {
+        bgGrid.style.transform = `perspective(600px) rotateX(${65 + currentMouseY * 8}deg) rotateY(${currentMouseX * 8}deg) translateY(${gridOffset}px)`;
+      }
+    }
 
     // Animate mouse follow glow orb
     if (glowPrimary) {
@@ -497,67 +808,179 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function initLabConsole() {
-    const chips = document.querySelectorAll('.lab-chip');
-    const text = document.getElementById('lab-console-text');
-    if (!chips.length || !text) return;
+  function initLabScroll() {
+    const track = document.getElementById('lab-scroll-track');
+    const textTrack = document.getElementById('lab-scroll-text-track');
+    const viewport = textTrack?.parentElement;
+    if (!track || !textTrack || !viewport) return;
 
-    const copy = {
-      ai: 'Training models to become useful products, not just impressive demos.',
-      web: 'Obsessing over motion, latency, layout, and the tiny details that make an interface feel inevitable.',
-      backend: 'Designing APIs, data flows, and services that stay calm when the frontend gets ambitious.',
-      product: 'Turning vague ideas into shippable loops: build, test, learn, tighten.'
-    };
+    const items = Array.from(textTrack.querySelectorAll('.lab-scroll-text-item'));
+    if (!items.length) return;
 
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        chips.forEach(item => item.classList.remove('active'));
-        chip.classList.add('active');
-        text.animate(
-          [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'translateY(0)' }],
-          { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-        );
-        text.textContent = copy[chip.dataset.lab] || copy.ai;
+    const totalItems = items.length;
+    const HOLD_VH = 0.42;
+    const TRANS_VH = 0.16;
+    const VIEWPORT_PAD = 16;
+    let labSnapTimer = null;
+    let itemOffsets = [0];
+    let targetIndex = 0;
+    let currentIndex = 0;
+    let displayOffset = 0;
+    let isLocked = true;
+
+    function easeInOutCubic(t) {
+      const x = Math.min(Math.max(t, 0), 1);
+      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
+
+    function getScrollableVh() {
+      return totalItems * HOLD_VH + (totalItems - 1) * TRANS_VH;
+    }
+
+    function measureItems() {
+      itemOffsets = [0];
+      const heights = items.map((item) => {
+        item.style.height = 'auto';
+        return item.getBoundingClientRect().height;
       });
-    });
-  }
 
-  function initSignalPanel() {
-    const panel = document.getElementById('signal-panel');
-    if (!panel) return;
+      for (let i = 1; i < heights.length; i++) {
+        itemOffsets.push(itemOffsets[i - 1] + heights[i - 1]);
+      }
 
-    panel.addEventListener('mousemove', (e) => {
-      const rect = panel.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      panel.style.transform = `perspective(700px) rotateX(${y * -7}deg) rotateY(${x * 9}deg)`;
-    });
+      const maxHeight = Math.max(...heights, 1);
+      viewport.style.height = `${maxHeight + VIEWPORT_PAD}px`;
+      return maxHeight;
+    }
 
-    panel.addEventListener('mouseleave', () => {
-      panel.style.transform = '';
-    });
+    function scrolledToIndex(scrolledPx) {
+      const vh = window.innerHeight;
+      let cursorVh = 0;
 
-    const counters = panel.querySelectorAll('[data-count-to]');
-    const counterObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        counters.forEach(counter => {
-          const target = Number(counter.dataset.countTo || 0);
-          const start = performance.now();
-          const duration = 1100;
-          function tick(now) {
-            const progress = Math.min((now - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            counter.textContent = Math.round(target * eased).toString();
-            if (progress < 1) requestAnimationFrame(tick);
+      for (let i = 0; i < totalItems; i++) {
+        if (scrolledPx / vh < cursorVh + HOLD_VH) {
+          return { index: i, locked: true };
+        }
+        cursorVh += HOLD_VH;
+
+        if (i < totalItems - 1) {
+          if (scrolledPx / vh < cursorVh + TRANS_VH) {
+            const t = easeInOutCubic((scrolledPx / vh - cursorVh) / TRANS_VH);
+            return { index: i + t, locked: false };
           }
-          requestAnimationFrame(tick);
-        });
-        observer.unobserve(entry.target);
+          cursorVh += TRANS_VH;
+        }
+      }
+
+      return { index: totalItems - 1, locked: true };
+    }
+
+    function lockIndexToScrollPx(lockIndex) {
+      const vh = window.innerHeight;
+      let cursorVh = 0;
+
+      for (let i = 0; i < lockIndex; i++) {
+        cursorVh += HOLD_VH + TRANS_VH;
+      }
+      cursorVh += HOLD_VH * 0.5;
+      return cursorVh * vh;
+    }
+
+    function nearestLockIndex(scrolledPx) {
+      let nearest = 0;
+      let minDist = Infinity;
+
+      for (let i = 0; i < totalItems; i++) {
+        const dist = Math.abs(scrolledPx - lockIndexToScrollPx(i));
+        if (dist < minDist) {
+          minDist = dist;
+          nearest = i;
+        }
+      }
+
+      return nearest;
+    }
+
+    function applyItemStates() {
+      const activeIndex = Math.min(Math.round(currentIndex), totalItems - 1);
+
+      items.forEach((item, i) => {
+        const isActive = i === activeIndex;
+        item.classList.toggle('is-active', isActive);
+        item.classList.toggle('is-locked', isActive && isLocked);
+        item.setAttribute('aria-hidden', isActive ? 'false' : 'true');
       });
-    }, { threshold: 0.35 });
-    counterObserver.observe(panel);
+    }
+
+    function labRenderLoop() {
+      const lerp = isLocked ? 0.14 : 0.1;
+      currentIndex += (targetIndex - currentIndex) * lerp;
+
+      if (Math.abs(targetIndex - currentIndex) < 0.001) {
+        currentIndex = targetIndex;
+      }
+
+      const activeIndex = Math.min(Math.round(currentIndex), totalItems - 1);
+      const targetOffset = itemOffsets[activeIndex] ?? 0;
+      displayOffset += (targetOffset - displayOffset) * lerp;
+
+      textTrack.style.transform = `translate3d(0, ${-displayOffset}px, 0)`;
+      applyItemStates();
+
+      requestAnimationFrame(labRenderLoop);
+    }
+
+    function setTrackHeight() {
+      measureItems();
+      track.style.height = `${window.innerHeight + getScrollableVh() * window.innerHeight}px`;
+      currentIndex = targetIndex;
+      displayOffset = itemOffsets[Math.min(Math.round(currentIndex), totalItems - 1)] ?? 0;
+      textTrack.style.transform = `translate3d(0, ${-displayOffset}px, 0)`;
+    }
+
+    function updateScrollText() {
+      const rect = track.getBoundingClientRect();
+      const scrollable = rect.height - window.innerHeight;
+      if (scrollable <= 0) return;
+
+      const scrolled = Math.min(Math.max(-rect.top, 0), scrollable);
+      const state = scrolledToIndex(scrolled);
+      targetIndex = state.index;
+      isLocked = state.locked;
+
+      clearTimeout(labSnapTimer);
+      if (rect.top <= 80 && rect.bottom >= window.innerHeight - 80) {
+        labSnapTimer = setTimeout(() => {
+          const snapIndex = nearestLockIndex(scrolled);
+          const snapOffset = lockIndexToScrollPx(snapIndex);
+          if (Math.abs(scrolled - snapOffset) < 24) return;
+
+          window.scrollTo({
+            top: window.scrollY + rect.top + snapOffset,
+            behavior: 'smooth'
+          });
+        }, 280);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      setTrackHeight();
+      updateScrollText();
+    });
+    window.addEventListener('scroll', updateScrollText, { passive: true });
+
+    setTrackHeight();
+    updateScrollText();
+    labRenderLoop();
+
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        setTrackHeight();
+        updateScrollText();
+      });
+    }
   }
+
 
   function initHiddenTerminal() {
     const overlay = document.getElementById('terminal-overlay');
@@ -572,6 +995,10 @@ document.addEventListener('DOMContentLoaded', () => {
       overlay.classList.add('active');
       overlay.setAttribute('aria-hidden', 'false');
       setTimeout(() => input.focus(), 80);
+      
+      if (typeof window.unlockPassportStamp === 'function') {
+        window.unlockPassportStamp('hacker');
+      }
     };
     const closeTerminal = () => {
       overlay.classList.remove('active');
@@ -685,6 +1112,10 @@ document.addEventListener('DOMContentLoaded', () => {
         result.textContent = contactNumber;
         result.classList.add('unlocked');
         trigger.textContent = 'Mobile number unlocked';
+        
+        if (typeof window.unlockPassportStamp === 'function') {
+          window.unlockPassportStamp('investigator');
+        }
       } else {
         result.textContent = 'Not quite. Hint: Think about all possible outcomes when rolling two dice.';
         result.classList.remove('unlocked');
@@ -734,6 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = `mailto:anmxlr@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     });
   }
+
 
   function initNameWarp() {
     const canvas = document.getElementById('name-warp-canvas');

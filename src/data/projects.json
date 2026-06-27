@@ -5,31 +5,20 @@
     "description": "A sharp public-facing web experience built around a space-themed participation idea, tuned for clean storytelling and fast static delivery.",
     "tags": "HTML, CSS, Vanilla JS, UI",
     "link": "https://anmxlr.github.io/Your_name_on_India/",
-    "github": "https://github.com/anmxlr",
-    "image": "src/assets/images/projects/1.png",
+    "github": "",
+    "image": "src/assets/images/projects/sat.png",
     "year": "2026",
     "status": "Featured"
   },
   {
     "id": "2",
-    "title": "Project 2",
+    "title": "CalKit",
     "description": "Backend and product experiments for college-scale workflows: cleaner APIs, faster loops, and tools that hold up under real student usage.",
     "tags": "Backend, REST, Product",
-    "link": "https://github.com/anmxlr",
-    "github": "https://github.com/anmxlr",
-    "image": "src/assets/images/iitb.png",
+    "link": "https://design-lab-web-application.vercel.app/",
+    "github": "",
+    "image": "src/assets/images/projects/calkit.png",
     "year": "2025",
     "status": "Building"
-  },
-  {
-    "id": "3",
-    "title": "Project 3",
-    "description": "A playground for motion, black-and-white visual systems, canvas interactions, custom cursors, and hidden details that reward attention.",
-    "tags": "Canvas, Motion, CSS, JS",
-    "link": "https://github.com/anmxlr",
-    "github": "https://github.com/anmxlr",
-    "image": "src/assets/images/iitb.png",
-    "year": "2026",
-    "status": "Ongoing"
   }
 ]
