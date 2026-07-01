@@ -30,6 +30,18 @@ img {
   color: #000000;
 }
 
+a,
+button,
+input[type="submit"],
+input[type="button"],
+[role="button"],
+project-card,
+.logo,
+.connect-btn,
+.magnetic-link {
+  touch-action: manipulation;
+}
+
 html {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -589,6 +601,7 @@ body.scroll-locked {
 
 .hero-title {
   width: 100%;
+  text-align: center;
   font-size: clamp(2.5rem, 8vw, 6rem);
   font-weight: 900;
   letter-spacing: -0.04em;
@@ -676,10 +689,7 @@ body.scroll-locked {
   height: 1.15em;
   overflow: visible;
   transition: width 0.6s cubic-bezier(0.76, 0, 0.24, 1);
-  text-align: left;
-}
-
-.hero-title.rewriting .change-wrapper {
+  text-align: center;
   font-size: var(--rewrite-font-size, 1em);
   max-width: 100%;
 }
@@ -702,7 +712,7 @@ body.scroll-locked {
   left: 0;
   top: 52%;
   width: 0;
-  height: 9px;
+  height: 0.12em;
   background: #ffffff;
   transform: translateY(-10%);
   transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
@@ -752,6 +762,8 @@ body.scroll-locked {
   position: absolute;
   left: 0;
   top: 0;
+  width: 100%;
+  text-align: center;
   white-space: nowrap;
   color: #ffffff;
   opacity: 0;
@@ -763,50 +775,8 @@ body.scroll-locked {
   display: inline-block;
 }
 
-.typewriter-cursor {
-  position: absolute;
-  left: calc(var(--typewriter-width, 0px) + 4px);
-  top: 0;
-  width: 4px;
-  height: 1.15em;
-  background-color: #ffffff;
-  opacity: 0;
-  animation: blinkCursor 0.8s steps(2, start) infinite;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-  z-index: 4;
-}
-
-.change-wrapper::after {
-  display: none;
-  content: '';
-  position: absolute;
-  left: calc(var(--typewriter-width, 0px) + 4px);
-  top: 0;
-  width: 4px;
-  height: 1.15em;
-  background-color: #ffffff;
-  opacity: 0;
-  animation: blinkCursor 0.8s steps(2, start) infinite;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-  z-index: 4;
-}
-
-.change-wrapper.pop .word-pop,
-.change-wrapper.pop .typewriter-cursor {
+.change-wrapper.pop .word-pop {
   opacity: 1;
-}
-
-/* Cool glowing cursor for typewriter */
-@keyframes blinkCursor {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0;
-  }
 }
 
 /* ── Glow Orb (ambient decoration) ───────────────── */
@@ -2352,12 +2322,8 @@ project-card {
 
 .education-title::after,
 .experience-title::after {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 2px;
-  background: #ffffff;
-  margin-top: 12px;
+  display: none;
+  content: none;
 }
 
 .section-lede {
@@ -2386,46 +2352,14 @@ project-card {
 }
 
 .timeline-dot {
-  position: absolute;
-  left: 0;
-  top: 0.72rem;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 0;
-  outline: 1px solid rgba(255, 255, 255, 0.24);
-  outline-offset: 7px;
-  transition: background-color 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
-  z-index: 2;
-}
-
-.timeline-dot::before {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 18px;
-  width: 1px;
-  height: calc(100% + clamp(2.5rem, 6vw, 5.5rem));
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.22), transparent);
-  pointer-events: none;
-}
-
-.timeline-item:last-child .timeline-dot::before {
   display: none;
-}
-
-.timeline-item:hover .timeline-dot {
-  background: #ffffff;
-  transform: scale(1.2);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
 }
 
 .timeline-content {
   position: relative;
   padding: 0 0 clamp(1.4rem, 3vw, 2rem);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.4s ease;
+  border-bottom: 0;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   display: grid;
   grid-template-columns: minmax(72px, 0.18fr) minmax(0, 1fr);
   gap: clamp(1.2rem, 4vw, 3.5rem);
@@ -2499,7 +2433,6 @@ project-card {
 
 .timeline-item:hover .timeline-content {
   transform: translateX(10px);
-  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .timeline-header {
@@ -2555,19 +2488,18 @@ project-card {
 }
 
 .timeline-tags span {
-  padding: 0 0 0.35rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 0;
+  border-bottom: 0;
   color: rgba(255, 255, 255, 0.48);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: color 0.25s ease, border-color 0.25s ease;
+  transition: color 0.25s ease;
 }
 
 .timeline-item:hover .timeline-tags span {
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Responsive ──────────────────────────────────── */
@@ -3047,6 +2979,23 @@ project-card {
 }
 
 @media (max-width: 768px) {
+  .hero {
+    min-height: 100dvh;
+    padding: 80px 1.5rem 3rem;
+  }
+
+  .hero-title {
+    margin-bottom: 1rem;
+  }
+
+  .hero-easter {
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-subtitle {
+    margin-bottom: 2rem;
+  }
+
   .name-warp-section {
     min-height: 55vh;
     padding: 4rem 0;

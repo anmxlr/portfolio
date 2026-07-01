@@ -54,18 +54,7 @@
                     <div class="purple-flame-core"></div>
                 </div>
             </h1>
-            <p class="about-hero-subtitle">I love listening to sad radiohead songs.</p>
-            <div class="vinyl-player-container">
-                <div class="vinyl-player" id="vinyl-player">
-                    <div class="vinyl-sleeve">
-                        <img src="../assets/images/about/Radioheadkida.png" alt="In Rainbows Cover" class="sleeve-img">
-                    </div>
-                    <div class="vinyl-disk-wrapper">
-                        <img src="../assets/images/about/kida.png" alt="Vinyl Record" class="vinyl-disk-img">
-                    </div>
-                    <audio id="vinyl-audio" src="../assets/audio/motionpicturesoundtrack.mp3" loop></audio>
-                </div>
-            </div>
+
         </section>
 
 
@@ -77,10 +66,10 @@
                     <div class="purple-flame-outer"></div>
                     <div class="purple-flame-core"></div>
                 </div>
-                <div class="section-kicker" style="color: #9333ea;">Nether Escape</div>
-                <h2 class="section-title" style="border-color: #9333ea;">Escape the Nether</h2>
-                <p class="section-description" style="color: #e9d5ff;">
-                    Your portal is broken! Mine 10 Obsidian blocks to rebuild it and escape before the Endermen catch
+                <div class="section-kicker" style="color: #ef4444;">Nether Escape</div>
+                <h2 class="section-title" style="border-color: #ef4444;">Escape the Nether</h2>
+                <p class="section-description" style="color: #ffe4e6;">
+                    Your portal is broken! Mine 10 Obsidian blocks to rebuild it and escape before the mobs catch
                     you.
                     WARNING: If you die in the Nether, your entire inventory will be lost!
                 </p>
@@ -103,7 +92,7 @@
                         <div class="mc-block-container">
                             <div class="mc-block" id="mc-active-block">
                                 <div class="mc-block-cracks" id="mc-block-cracks"></div>
-                                <span class="mc-block-symbol" id="mc-block-symbol">🪨</span>
+                                <span class="mc-block-symbol" id="mc-block-symbol"><img src="../assets/images/minecraft/stone.jpg" alt="Stone" style="width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated;" /></span>
                             </div>
                         </div>
                         <div class="mc-screen-stats">
@@ -113,7 +102,7 @@
                             </div>
                             <div class="mc-block-hp-text" id="mc-block-hp-text">HP: 40 / 40</div>
                             <div class="mc-obsidian-count" id="mc-obsidian-count"
-                                style="font-family: 'Courier Prime', monospace; font-size: 0.78rem; color: #9333ea; margin-top: 4px; font-weight: bold;">
+                                style="font-family: 'Courier Prime', monospace; font-size: 0.78rem; color: #f97316; margin-top: 4px; font-weight: bold;">
                                 Obsidian Mined: 0 / 10</div>
                         </div>
                     </div>
@@ -124,40 +113,66 @@
                         <div class="mc-inventory">
                             <div class="mc-inv-slot" title="Cobblestone">
                                 <span class="mc-inv-icon"><img src="../assets/images/minecraft/stone_icon.png"
-                                        alt="Cobblestone" draggable="false"></span>
+                                         alt="Cobblestone" draggable="false"></span>
                                 <span class="mc-inv-count" id="mc-count-cobble">0</span>
                             </div>
                             <div class="mc-inv-slot" title="Coal">
                                 <span class="mc-inv-icon"><img src="../assets/images/minecraft/coal_icon.webp"
-                                        alt="Coal" draggable="false"></span>
+                                         alt="Coal" draggable="false"></span>
                                 <span class="mc-inv-count" id="mc-count-coal">0</span>
                             </div>
                             <div class="mc-inv-slot" title="Iron">
                                 <span class="mc-inv-icon"><img src="../assets/images/minecraft/iron_icon.webp"
-                                        alt="Iron" draggable="false"></span>
+                                         alt="Iron" draggable="false"></span>
                                 <span class="mc-inv-count" id="mc-count-iron">0</span>
                             </div>
                             <div class="mc-inv-slot" title="Gold">
                                 <span class="mc-inv-icon"><img src="../assets/images/minecraft/gold_icon.webp"
-                                        alt="Gold" draggable="false"></span>
+                                         alt="Gold" draggable="false"></span>
                                 <span class="mc-inv-count" id="mc-count-gold">0</span>
                             </div>
                             <div class="mc-inv-slot" title="Diamond">
                                 <span class="mc-inv-icon"><img src="../assets/images/minecraft/daimond_icon.png"
-                                        alt="Diamond" draggable="false"></span>
+                                         alt="Diamond" draggable="false"></span>
                                 <span class="mc-inv-count" id="mc-count-diamond">0</span>
+                            </div>
+                            <div class="mc-inv-slot" title="Ghast Tear">
+                                <span class="mc-inv-icon"><img src="../assets/images/minecraft/Amethyst_Shard_JE2_BE1.webp" alt="Ghast Tear" draggable="false"></span>
+                                <span class="mc-inv-count" id="mc-count-tear">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Crafting Panel -->
+                        <div class="mc-crafting-panel"
+                            style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                            <button class="mc-btn" id="mc-craft-sword" type="button" disabled
+                                style="border-color: #ef4444; color: #f87171;">
+                                <span class="mc-btn-label">CRAFT NETHERITE SWORD</span>
+                                <span class="mc-btn-cost" id="mc-cost-sword">Cost: 3 Iron, 2 Diamond</span>
+                            </button>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button class="mc-btn" id="mc-craft-apple" type="button" disabled
+                                    style="border-color: #f59e0b; color: #fbbf24;">
+                                    <span class="mc-btn-label">GOLDEN APPLE</span>
+                                    <span class="mc-btn-cost" id="mc-cost-apple">Cost: 5 Gold, 2 Coal</span>
+                                </button>
+                                <button class="mc-btn" id="mc-craft-potion" type="button" disabled
+                                    style="border-color: #22d3ee; color: #67e8f9;">
+                                    <span class="mc-btn-label">FIRE RESIST POTION</span>
+                                    <span class="mc-btn-cost" id="mc-cost-potion">Cost: 3 Coal, 2 Gold</span>
+                                </button>
                             </div>
                         </div>
 
                         <!-- Upgrade Action Panel -->
                         <div class="mc-actions">
                             <button class="mc-btn" id="mc-escape-btn" type="button" disabled
-                                style="display: none; border-color: #9333ea; color: #9333ea;">
+                                style="display: none; border-color: #22d3ee; color: #22d3ee;">
                                 <span class="mc-btn-label">ESCAPE THE NETHER</span>
                                 <span class="mc-btn-cost" id="mc-escape-status">Portal Inactive</span>
                             </button>
-                            <div class="mc-tool-info" id="mc-tool-info" style="color: #e9d5ff;">Tool: Netherite Pickaxe
-                                (Power: 50)</div>
+                            <div class="mc-tool-info" id="mc-tool-info" style="color: #fca5a5;">Tool: Wooden Pickaxe
+                                (Power: 10)</div>
                             <div class="mc-nether-warning" id="mc-nether-warning"></div>
                         </div>
                     </div>

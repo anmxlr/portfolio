@@ -375,7 +375,8 @@ function startAboutPage() {
       canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       points.length = 0;
-      const count = Math.min(70, Math.max(28, Math.floor(width * height / 24000)));
+      const isMobile = window.innerWidth <= 768;
+      const count = Math.min(70, Math.max(isMobile ? 15 : 28, Math.floor(width * height / 24000)));
       for (let i = 0; i < count; i++) {
         points.push({
           x: Math.random() * width,
@@ -655,7 +656,7 @@ function startAboutPage() {
     });
 
     // Handle scratching / dragging the vinyl disk
-    diskImg.addEventListener('mousedown', (e) => {
+    function startScratch(clientX, clientY) {
       if (!player.classList.contains('playing')) return;
 
       if (window.unlockPassportStamp) {
@@ -669,19 +670,27 @@ function startAboutPage() {
       centerX = rect.left + rect.width / 2;
       centerY = rect.top + rect.height / 2;
 
-      const dx = e.clientX - centerX;
-      const dy = e.clientY - centerY;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
       lastMouseAngle = Math.atan2(dy, dx);
 
       // Pitch bend down temporarily on grab
       audio.playbackRate = 0.5;
-    });
+    }
 
-    window.addEventListener('mousemove', (e) => {
+    diskImg.addEventListener('mousedown', (e) => startScratch(e.clientX, e.clientY));
+    diskImg.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length > 0) {
+        e.preventDefault();
+        startScratch(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+
+    function moveScratch(clientX, clientY) {
       if (!isDragging) return;
 
-      const dx = e.clientX - centerX;
-      const dy = e.clientY - centerY;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
       const currentMouseAngle = Math.atan2(dy, dx);
 
       let deltaAngle = currentMouseAngle - lastMouseAngle;
@@ -701,15 +710,27 @@ function startAboutPage() {
       audio.playbackRate = Math.min(2.5, Math.max(0.3, speed));
 
       lastMouseAngle = currentMouseAngle;
-    });
+    }
 
-    window.addEventListener('mouseup', () => {
+    window.addEventListener('mousemove', (e) => moveScratch(e.clientX, e.clientY));
+    window.addEventListener('touchmove', (e) => {
+      if (isDragging && e.touches && e.touches.length > 0) {
+        e.preventDefault();
+        moveScratch(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+
+    function endScratch() {
       if (isDragging) {
         isDragging = false;
         diskImg.classList.remove('scratching');
         audio.playbackRate = 1.0;
       }
-    });
+    }
+
+    window.addEventListener('mouseup', endScratch);
+    window.addEventListener('touchend', endScratch);
+    window.addEventListener('touchcancel', endScratch);
 
     audio.addEventListener('ended', () => {
       player.classList.remove('playing');
@@ -723,7 +744,8 @@ function startAboutPage() {
       melophile: document.getElementById('stamp-melophile'),
       hacker: document.getElementById('stamp-hacker'),
       investigator: document.getElementById('stamp-investigator'),
-      miner: document.getElementById('stamp-miner')
+      miner: document.getElementById('stamp-miner'),
+      survivor: document.getElementById('stamp-survivor')
     };
 
     function updateStampVisuals(key) {
@@ -739,6 +761,16 @@ function startAboutPage() {
 
     // Initial load
     Object.keys(stamps).forEach(updateStampVisuals);
+
+    // Check if traveler escaped the Nether
+    if (localStorage.getItem('nether_transition_back') === 'true') {
+      localStorage.removeItem('nether_transition_back');
+      setTimeout(() => {
+        if (window.unlockPassportStamp) {
+          window.unlockPassportStamp('survivor');
+        }
+      }, 1000);
+    }
 
     // Expose unlock function globally for page actions
     window.unlockPassportStamp = function (key) {
@@ -838,6 +870,9 @@ function startAboutPage() {
       }
       
       function onMouseMove(e) {
+        if (e.type === 'touchmove') {
+          e.preventDefault();
+        }
         const moveX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
         const moveY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
         moveAt(moveX, moveY);
@@ -1004,6 +1039,11 @@ function startAboutPage() {
     const upgradeBtn = document.getElementById('mc-upgrade-btn');
     const upgradeCostEl = document.getElementById('mc-upgrade-cost');
     const toolInfoEl = document.getElementById('mc-tool-info');
+    const mobileToolEl = document.getElementById('mc-mobile-tool');
+    const mobileToolImg = document.getElementById('mc-mobile-tool-img');
+    const mobileToolNameEl = document.getElementById('mc-mobile-tool-name');
+    const touchToolEl = document.getElementById('mc-touch-tool');
+    const touchToolImg = document.getElementById('mc-touch-tool-img');
     
     if (!blockEl) return;
     
@@ -1016,6 +1056,16 @@ function startAboutPage() {
       { name: 'Diamond Pickaxe', power: 16 },
       { name: 'Netherite Pickaxe', power: 30 },
       { name: 'Enchanted Netherite Pickaxe', power: 50 } // Tier 6 retains Netherite power
+    ];
+
+    const toolIcons = [
+      '',
+      '../assets/images/minecraft/Wooden_Pickaxe_JE3_BE3.webp',
+      '../assets/images/minecraft/Iron_Pickaxe_JE3_BE2.webp',
+      '../assets/images/minecraft/Golden_Pickaxe_JE4_BE3.webp',
+      '../assets/images/minecraft/Diamond_Pickaxe_JE3_BE3.webp',
+      '../assets/images/minecraft/Netherite_Pickaxe_JE3.webp',
+      '../assets/images/minecraft/Enchanted_Netherite_Pickaxe.webp'
     ];
     
     const upgradeCosts = [
@@ -1466,6 +1516,33 @@ function startAboutPage() {
     function saveState() {
       localStorage.setItem('mc_pocket_miner_state', JSON.stringify(state));
     }
+
+    function setToolVisual(container, imgEl, tier) {
+      if (!container || !imgEl) return;
+      const icon = toolIcons[tier] || '';
+      container.classList.toggle('has-image', !!icon);
+      if (icon) {
+        imgEl.src = icon;
+      } else {
+        imgEl.removeAttribute('src');
+      }
+    }
+
+    function updateMobileTool() {
+      const currentTool = tools[state.tier];
+      if (mobileToolNameEl) {
+        mobileToolNameEl.textContent = state.tier === 6 ? 'Portal Tool' : currentTool.name;
+      }
+      setToolVisual(mobileToolEl, mobileToolImg, state.tier);
+      setToolVisual(touchToolEl, touchToolImg, state.tier);
+    }
+
+    function animateTouchTool() {
+      if (!touchToolEl) return;
+      touchToolEl.classList.remove('swing');
+      void touchToolEl.offsetWidth;
+      touchToolEl.classList.add('swing');
+    }
     
     function updateUI() {
       document.getElementById('mc-count-cobble').textContent = state.inventory.cobble;
@@ -1476,6 +1553,7 @@ function startAboutPage() {
       
       const currentTool = tools[state.tier];
       toolInfoEl.textContent = state.tier === 6 ? "Nether Portal Active" : `Tool: ${currentTool.name} (Power: ${currentTool.power})`;
+      updateMobileTool();
       
       if (state.tier === 6) {
         upgradeBtn.disabled = false;
@@ -1566,6 +1644,7 @@ function startAboutPage() {
     }
 
     blockEl.addEventListener('click', () => {
+      animateTouchTool();
       if (state.tier === 6) {
         enterNetherPortal();
         return;

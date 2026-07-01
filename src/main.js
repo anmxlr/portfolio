@@ -148,6 +148,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!wrapper || !strike) return;
     const finalTitle = 'make something cool';
 
+    function fitInitialTitle() {
+      if (!heroTitle || !strike) return;
+      wrapper.style.removeProperty('--rewrite-font-size');
+      const availableWidth = Math.max(heroTitle.clientWidth - 16, 1);
+      const measuredWidth = strike.offsetWidth;
+      const scale = Math.min(1, availableWidth / Math.max(measuredWidth, 1));
+      
+      wrapper.style.setProperty('--rewrite-font-size', `${scale.toFixed(3)}em`);
+      wrapper.style.width = `${Math.ceil(measuredWidth * scale) + 8}px`;
+    }
+
     function fitFinalTitle() {
       if (!heroTitle) return;
 
@@ -167,23 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       wrapper.style.setProperty('--rewrite-font-size', `${scale.toFixed(3)}em`);
       wrapper.style.width = `${Math.ceil(measuredWidth * scale) + 8}px`;
-
-      if (typewriterText?.textContent) {
-        const currentSpan = document.createElement('span');
-        currentSpan.style.visibility = 'hidden';
-        currentSpan.style.position = 'absolute';
-        currentSpan.style.whiteSpace = 'nowrap';
-        currentSpan.style.font = window.getComputedStyle(wrapper).font;
-        currentSpan.textContent = typewriterText.textContent;
-        document.body.appendChild(currentSpan);
-        wrapper.style.setProperty('--typewriter-width', `${currentSpan.offsetWidth}px`);
-        document.body.removeChild(currentSpan);
-      }
     }
 
     if (typewriterText) typewriterText.textContent = '';
-    wrapper.style.setProperty('--typewriter-width', '0px');
-    wrapper.style.width = `${strike.offsetWidth}px`;
+    fitInitialTitle();
     setTimeout(() => wrapper.classList.add('cut'), 1200);
     setTimeout(() => {
       if (heroTitle) heroTitle.classList.add('rewriting');
@@ -198,30 +196,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2050);
 
     window.addEventListener('resize', () => {
-      if (heroTitle?.classList.contains('rewriting')) fitFinalTitle();
+      if (heroTitle?.classList.contains('rewriting')) {
+        fitFinalTitle();
+      } else {
+        fitInitialTitle();
+      }
     }, { passive: true });
   }
 
   function typewriterEffect(wrapper, target, text) {
     if (!wrapper || !target) return;
     let index = 0;
-    const tempSpan = document.createElement('span');
-    tempSpan.style.visibility = 'hidden';
-    tempSpan.style.position = 'absolute';
-    tempSpan.style.whiteSpace = 'nowrap';
-    tempSpan.style.font = window.getComputedStyle(wrapper).font;
-    document.body.appendChild(tempSpan);
 
     function type() {
       if (index < text.length) {
         index++;
         const currentText = text.slice(0, index);
         target.textContent = currentText;
-        tempSpan.textContent = currentText;
-        wrapper.style.setProperty('--typewriter-width', `${tempSpan.offsetWidth}px`);
         setTimeout(type, 50 + Math.random() * 40);
-      } else {
-        document.body.removeChild(tempSpan);
       }
     }
 
@@ -751,7 +743,8 @@ document.addEventListener('DOMContentLoaded', () => {
       canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       points.length = 0;
-      const count = Math.min(70, Math.max(28, Math.floor(width * height / 24000)));
+      const isMobileDevice = window.innerWidth <= 768;
+      const count = Math.min(70, Math.max(isMobileDevice ? 15 : 28, Math.floor(width * height / 24000)));
       for (let i = 0; i < count; i++) {
         points.push({
           x: Math.random() * width,
@@ -949,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isLocked = state.locked;
 
       clearTimeout(labSnapTimer);
-      if (rect.top <= 80 && rect.bottom >= window.innerHeight - 80) {
+      if (window.innerWidth > 768 && rect.top <= 80 && rect.bottom >= window.innerHeight - 80) {
         labSnapTimer = setTimeout(() => {
           const snapIndex = nearestLockIndex(scrolled);
           const snapOffset = lockIndexToScrollPx(snapIndex);
@@ -1321,9 +1314,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = imgData.data;
 
       // Increase pixel sampling density and particle size on mobile for high readability
-      const step = w > 768 ? 4 : (w < 480 ? 2 : 3);
-      const baseParticleSize = w > 768 ? 1.5 : (w < 480 ? 2.8 : 2.0);
-      const particleSizeVar = w > 768 ? 1.5 : (w < 480 ? 2.0 : 1.8);
+      const step = w > 768 ? 4 : (w < 480 ? 3 : 3);
+      const baseParticleSize = w > 768 ? 1.5 : (w < 480 ? 3.0 : 2.0);
+      const particleSizeVar = w > 768 ? 1.5 : (w < 480 ? 2.2 : 1.8);
 
       for (let y = 0; y < h; y += step) {
         for (let x = 0; x < w; x += step) {
